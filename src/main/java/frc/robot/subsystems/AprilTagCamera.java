@@ -1,40 +1,47 @@
-package frc.robot.subsystems.camera;
+package frc.robot.subsystems;
 
-import java.util.Optional;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-import frc.robot.Constants;
-import org.jcp.xml.dsig.internal.dom.Utils;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
+import com.ctre.phoenix6.Utils;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.robot.constants.Constants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
+
+import java.util.Optional;
 
 public class AprilTagCamera extends SubsystemBase {
 
     private final PhotonCamera camera;
     private final PhotonPoseEstimator poseEstimator;
+    private final CommandSwerveDrivetrain drivetrain;
     private final AprilTagFieldLayout aprilTagFieldLayout;
     private final SendableChooser<Boolean> cameraEnabled;
 
-    public AprilTagCamera(String cameraName, Transform3d robotToCamera) {
+    public AprilTagCamera(String cameraName, Transform3d robotToCamera, CommandSwerveDrivetrain drivetrain) {
         this.camera = new PhotonCamera(cameraName);
-        aprilTagFieldLayout = AprilTagFields.k2025Reefscape.loadAprilTagLayoutField();
+        aprilTagFieldLayout = AprilTagFields.k2026RebuiltAndymark.loadAprilTagLayoutField();
         aprilTagFieldLayout.setOrigin(AprilTagFieldLayout.OriginPosition.kBlueAllianceWallRightSide);
         this.poseEstimator = new PhotonPoseEstimator(
                 aprilTagFieldLayout,
                 PhotonPoseEstimator.PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
                 robotToCamera
         );
+        this.drivetrain = drivetrain;
 
         cameraEnabled = new SendableChooser<Boolean>();
         cameraEnabled.setDefaultOption("Enabled", true);
