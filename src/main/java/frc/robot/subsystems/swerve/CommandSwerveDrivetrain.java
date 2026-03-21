@@ -10,6 +10,11 @@ import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.pathplanner.lib.commands.FollowPathCommand;
+import com.pathplanner.lib.config.PIDConstants;
+import com.pathplanner.lib.config.RobotConfig;
+import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+import com.pathplanner.lib.path.PathPlannerPath;
 
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,7 +28,8 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.robot.commands.TunerConstants.TunerSwerveDrivetrain;
+import frc.robot.constants.Constants;
+import frc.robot.constants.TunerConstants.TunerSwerveDrivetrain;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements
@@ -43,6 +49,8 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     private static final Rotation2d kRedAlliancePerspectiveRotation = Rotation2d.k180deg;
     /* Keep track if we've ever applied the operator perspective before or not */
     private boolean m_hasAppliedOperatorPerspective = false;
+
+     private final SwerveRequest.ApplyRobotSpeeds m_pathApplyRobotSpeeds = new SwerveRequest.ApplyRobotSpeeds();
 
     /* Swerve requests to apply during SysId characterization */
     private final SwerveRequest.SysIdSwerveTranslation m_translationCharacterization = new SwerveRequest.SysIdSwerveTranslation();
@@ -187,6 +195,36 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         }
     }
 
+      public Command driveAlongPath(PathPlannerPath path) {
+        try {
+            var config = RobotConfig.fromGUISettings();
+
+            return new FollowPathCommand(
+                path, 
+                () -> getState().Pose, // Pose supplier
+                () -> getState().Speeds, // SwerveDriveKinematics
+                (speeds, feedforwards) -> setControl(
+                    m_pathApplyRobotSpeeds.withSpeeds(speeds)
+                        .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
+                        .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
+                ),
+                new PPHolonomicDriveController(
+                    // PID constants for translation
+                    new PIDConstants(Constants.SwerveConstants.TRANSLATION_PP_KP, Constants.SwerveConstants.TRANSLATION_PP_KI, Constants.SwerveConstants.TRANSLATION_PP_KD),
+                    // PID constants for rotation
+                    new PIDConstants(Constants.SwerveConstants.ROTATION_PP_KP, Constants.SwerveConstants.ROTATION_PP_KI, Constants.SwerveConstants.ROTATION_PP_KD)
+                ),
+                config,
+                // Assume the path needs to be flipped for Red vs Blue, this is normally the case
+                () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
+                this // Requires this drive subsystem
+            );
+        } catch (Exception e) {
+            DriverStation.reportError("Failed to load PathPlanner config and configure path-on-the-fly generation", e.getStackTrace());
+            return null;
+        }
+    }
+
     /**
      * Returns a command that applies the specified control request to this swerve drivetrain.
      *
@@ -298,5 +336,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     @Override
     public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
         return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
+    }
+
+    public Object runOnce(Object resetRotation) {
+        // TODO Auto-generated method stub
+        throw new UnsupportedOperationException("Unimplemented method 'runOnce'");
     }
 }

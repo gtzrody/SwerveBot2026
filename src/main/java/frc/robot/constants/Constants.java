@@ -23,6 +23,14 @@ public class Constants {
         public static final double CLOSE_ROTATION_PP_KI = 0.0;
         public static final double CLOSE_ROTATION_PP_KD = 0.0;
 
+        public static final double TRANSLATION_PP_KP = 4.5;
+        public static final double TRANSLATION_PP_KI = 0.0;
+        public static final double TRANSLATION_PP_KD = 0.0;
+
+        public static final double ROTATION_PP_KP = 2.5;
+        public static final double ROTATION_PP_KI = 0.0;
+        public static final double ROTATION_PP_KD = 0.0;
+
 
  }
 

@@ -2,7 +2,7 @@
 // Open Source Software; you can modify and/or share it under the terms of
 // the WPILib BSD license file in the root directory of this project.
 
-package frc.robot.subsystems.hood;
+package frc.robot.subsystems.indexer;
 
 import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
@@ -22,6 +22,8 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import yams.gearing.GearBox;
+import yams.gearing.MechanismGearing;
 import yams.mechanisms.SmartMechanism;
 import yams.mechanisms.config.ArmConfig;
 import yams.mechanisms.positional.Arm;
@@ -37,18 +39,18 @@ import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
-public class Hood extends SubsystemBase {
+public class Indexer extends SubsystemBase {
 
-  private SmartMotorControllerConfig smcConfig = new SmartMotorControllerConfig(this)
+  private SmartMotorControllerConfig IndexConfig = new SmartMotorControllerConfig(this)
   .withControlMode(ControlMode.CLOSED_LOOP)
-  .withClosedLoopController(30, 0, 0, DegreesPerSecond.of(90), DegreesPerSecondPerSecond.of(45))
-  .withSimClosedLoopController(50, 0, 0, DegreesPerSecond.of(90), DegreesPerSecondPerSecond.of(45))
+  .withClosedLoopController(10, 0, 0, DegreesPerSecond.of(90), DegreesPerSecondPerSecond.of(45))
+  .withSimClosedLoopController(10, 0, 0, DegreesPerSecond.of(90), DegreesPerSecondPerSecond.of(45))
   .withFeedforward(new ArmFeedforward(0, 0, 0))
   .withSimFeedforward(new ArmFeedforward(0, 0, 0))
-  .withTelemetry("HoodMotor", TelemetryVerbosity.HIGH)
+  .withTelemetry("IndexMotor", TelemetryVerbosity.HIGH)
   // Gearing from the motor rotor to final shaft.
   // In this example GearBox.fromReductionStages(3,4) is the same as GearBox.fromStages("3:1","4:1") which corresponds to the gearbox attached to your motor.
-  .withGearing(36)
+  .withGearing(new MechanismGearing(GearBox.fromReductionStages(36, 25)))
   // Motor properties to prevent over currenting.
   .withMotorInverted(false)
   .withIdleMode(MotorMode.BRAKE)    
@@ -57,18 +59,18 @@ public class Hood extends SubsystemBase {
   .withOpenLoopRampRate(Seconds.of(0.25));
 
   // Vendor motor controller object
-    TalonFX hoodFx = new TalonFX(17, new CANBus("canivore"));
+    TalonFX indexFx = new TalonFX(18, new CANBus("canivore"));
 
 
   // Create our SmartMotorController from our Spark and config with the NEO.
-  SmartMotorController hoodController = new TalonFXWrapper(hoodFx, DCMotor.getKrakenX60(1), smcConfig);
+  SmartMotorController indexController = new TalonFXWrapper(indexFx, DCMotor.getKrakenX60(1), IndexConfig);
 
 
-  private ArmConfig armCfg = new ArmConfig(hoodController)
+  private ArmConfig indexCfg = new ArmConfig(indexController)
   // Soft limit is applied to the SmartMotorControllers PID
-  .withSoftLimits(Degrees.of(-95), Degrees.of(100))
+  .withSoftLimits(Degrees.of(-360), Degrees.of(360))
   // Hard limit is applied to the simulation.
-  .withHardLimit(Degrees.of(-95), Degrees.of(100))
+  .withHardLimit(Degrees.of(-720), Degrees.of(720))
   // Starting position is where your arm starts
   .withStartingPosition(Degrees.of(0))
   // Length and mass of your arm for sim.
@@ -78,42 +80,18 @@ public class Hood extends SubsystemBase {
   .withTelemetry("Arm", TelemetryVerbosity.HIGH);
 
   // Arm Mechanism
-  private Arm arm = new Arm(armCfg);
+  private Arm index = new Arm(indexCfg);
 
-  /**
-   * Set the angle of the arm, does not stop when the arm reaches the setpoint.
-   * @param angle Angle to go to.
-   * @return A command.
-   */
-  public Command setAngle(Angle angle) { return arm.run(angle);}
-  
-  /**
-   * Set the angle of the arm, ends the command but does not stop the arm when the arm reaches the setpoint.
-   * @param angle Angle to go to.
-   * @param tolerance Angle tolerance for completion.
-   * @return A Command
-   */
-  public Command setAngleAndStop(Angle angle, Angle tolerance) { return arm.runTo(angle, tolerance);}
-  
-  /**
-   * Set arm closed loop controller to go to the specified mechanism position.
-   * @param angle Angle to go to.
-   */
-  public void setAngleSetpoint(Angle angle) { arm.setMechanismPositionSetpoint(angle); }
 
   /**
    * Move the arm up and down.
    * @param cycle [-1, 1] speed to set the arm too.
    */
-  public Command set(double cycle) { return arm.set(cycle);}
+  public Command set(double cycle) { return index.set(cycle);}
 
-  /**
-   * Run sysId on the {@link Arm}
-   */
-  public Command sysId() { return arm.sysId(Volts.of(7), Volts.of(2).per(Second), Seconds.of(4));}
 
   /** Creates a new ExampleSubsystem. */
-  public Hood() {}
+  public Indexer() {}
 
   /**
    * Example command factory method.
@@ -142,12 +120,12 @@ public class Hood extends SubsystemBase {
   @Override
   public void periodic() {
     // This method will be called once per scheduler run
-    arm.updateTelemetry();
+    index.updateTelemetry();
   }
 
   @Override
   public void simulationPeriodic() {
     // This method will be called once per scheduler run during simulation
-    arm.simIterate();
+    index.simIterate();
   }
 }

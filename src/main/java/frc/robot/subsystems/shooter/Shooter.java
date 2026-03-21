@@ -27,6 +27,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import yams.gearing.GearBox;
+import yams.gearing.MechanismGearing;
 import yams.mechanisms.SmartMechanism;
 import yams.mechanisms.config.FlyWheelConfig;
 import yams.mechanisms.velocity.FlyWheel;
@@ -38,6 +39,7 @@ import yams.motorcontrollers.SmartMotorControllerConfig.TelemetryVerbosity;
 import yams.motorcontrollers.local.SparkWrapper;
 import yams.motorcontrollers.remote.TalonFXWrapper;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -45,8 +47,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 
 public class Shooter extends SubsystemBase {
 
-  TalonFX leftTalon = new TalonFX(1);
-  TalonFX rightTalon = new TalonFX(0);
+  TalonFX leftTalon = new TalonFX(13, new CANBus("canivore"));
+  TalonFX rightTalon = new TalonFX(14, new CANBus("canivore"));
 
  TalonFXConfiguration vendorConfig = new TalonFXConfiguration();
 
@@ -54,7 +56,7 @@ public class Shooter extends SubsystemBase {
   .withControlMode(ControlMode.CLOSED_LOOP)
   // Feedback Constants (PID Constants)
   .withClosedLoopController(10, 0, 0)
-  .withSimClosedLoopController(1, 0, 0)
+  .withSimClosedLoopController(10, 0, 0)
   // Feedforward Constants
   .withFeedforward(new SimpleMotorFeedforward(0, 0, 0))
   .withSimFeedforward(new SimpleMotorFeedforward(0, 0, 0))
@@ -63,7 +65,7 @@ public class Shooter extends SubsystemBase {
   // Gearing from the motor rotor to final shaft.
   // In this example GearBox.fromReductionStages(3,4) is the same as GearBox.fromStages("3:1","4:1") which corresponds to the gearbox attached to your motor.
   // You could also use .withGearing(12) which does the same thing.
-  .withGearing(25)
+  .withGearing(new MechanismGearing(GearBox.fromReductionStages(36, 25)))
   // Motor properties to prevent over currenting.
   .withMotorInverted(false)
   .withIdleMode(MotorMode.COAST)
@@ -76,7 +78,7 @@ SmartMotorController leftMotor = new TalonFXWrapper(leftTalon, DCMotor.getKraken
   .withControlMode(ControlMode.CLOSED_LOOP)
   // Feedback Constants (PID Constants)
   .withClosedLoopController(10, 0, 0)
-  .withSimClosedLoopController(1, 0, 0)
+  .withSimClosedLoopController(10, 0, 0)
   // Feedforward Constants
   .withFeedforward(new SimpleMotorFeedforward(0, 0, 0))
   .withSimFeedforward(new SimpleMotorFeedforward(0, 0, 0))
@@ -85,9 +87,9 @@ SmartMotorController leftMotor = new TalonFXWrapper(leftTalon, DCMotor.getKraken
   // Gearing from the motor rotor to final shaft.
   // In this example GearBox.fromReductionStages(3,4) is the same as GearBox.fromStages("3:1","4:1") which corresponds to the gearbox attached to your motor.
   // You could also use .withGearing(12) which does the same thing.
-  .withGearing(36)
+  .withGearing(new MechanismGearing(GearBox.fromReductionStages(36, 25)))
   // Motor properties to prevent over currenting.
-  .withMotorInverted(false)
+  .withMotorInverted(true)
   .withIdleMode(MotorMode.COAST)
   .withSupplyCurrentLimit(Amps.of(40))
   .withLooselyCoupledFollowers(leftMotor);
@@ -95,13 +97,13 @@ SmartMotorController leftMotor = new TalonFXWrapper(leftTalon, DCMotor.getKraken
   SmartMotorController rightMotor = new TalonFXWrapper(rightTalon, DCMotor.getKrakenX60(1), rightConfig);
 
 
- private final FlyWheelConfig leftShooterConfig = new FlyWheelConfig(leftMotor)
+ private final FlyWheelConfig leftShooterConfig = new FlyWheelConfig(rightMotor)
   // Diameter of the flywheel.
   .withDiameter(Inches.of(4))
   // Mass of the flywheel.
   .withMass(Pounds.of(1.54))
   // Maximum speed of the shooter.
-  .withUpperSoftLimit(RPM.of(4000))
+  .withUpperSoftLimit(RPM.of(4900))
   // Telemetry name and verbosity for the arm.
   .withTelemetry("ShooterMech", TelemetryVerbosity.HIGH);
   
