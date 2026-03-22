@@ -99,7 +99,7 @@ public class Constants {
 
           public static final Transform3d CAMERA_1_POS = new Transform3d(
             new Translation3d(Units.inchesToMeters(-14.945), Units.inchesToMeters(1.49885), Units.inchesToMeters(3.1305)),
-            new Rotation3d(0, -1 * Units.degreesToRadians( 61.519), Units.degreesToRadians(180 + 34.314577)) 
+            new Rotation3d(0, Units.degreesToRadians(90 + 61.519), Units.degreesToRadians(180 + 34.314577)) 
         );
 
         //Camera Constants for left from the intake
@@ -108,7 +108,7 @@ public class Constants {
 
         public static final Transform3d CAMERA_2_POS = new Transform3d(
             new Translation3d(Units.inchesToMeters(-14.9446), Units.inchesToMeters(-1.50675), Units.inchesToMeters(3.1374)), 
-            new Rotation3d(0, -1 * Units.degreesToRadians(61.519), Units.degreesToRadians(180 - 34.314577))
+            new Rotation3d(0, Units.degreesToRadians(90 + 61.519), Units.degreesToRadians(180 - 34.314577))
         );
     }
 }

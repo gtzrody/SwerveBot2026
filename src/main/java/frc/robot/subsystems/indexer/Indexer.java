@@ -68,9 +68,7 @@ public class Indexer extends SubsystemBase {
 
   private ArmConfig indexCfg = new ArmConfig(indexController)
   // Soft limit is applied to the SmartMotorControllers PID
-  .withSoftLimits(Degrees.of(-360), Degrees.of(360))
   // Hard limit is applied to the simulation.
-  .withHardLimit(Degrees.of(-720), Degrees.of(720))
   // Starting position is where your arm starts
   .withStartingPosition(Degrees.of(0))
   // Length and mass of your arm for sim.

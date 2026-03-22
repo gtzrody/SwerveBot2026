@@ -27,9 +27,9 @@ import frc.robot.constants.Constants;
 import frc.robot.constants.TunerConstants;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.hood.Hood;
-// import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.indexer.Indexer;
-// import frc.robot.subsystems.hopper.Hopper;
+import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.auto.LeftDriveAuto;
 import frc.robot.auto.RightDriveAuto;
 import frc.robot.constants.Constants.CameraConstants;
@@ -53,9 +53,9 @@ public class RobotContainer {
     private final SwerveRequest.PointWheelsAt point = new SwerveRequest.PointWheelsAt();
     private final Hood m_hood = new Hood();
     private final Shooter m_Shooter = new Shooter();
-    // private final Intake m_intake = new Intake();
+    private final Intake m_intake = new Intake();
     private final Indexer m_index = new Indexer();
-    // private final Hopper m_hopper = new Hopper();
+    private final Hopper m_hopper = new Hopper();
     // private final Command swerveTeleop = new SwerveTeleop(drivetrain, joystick);
 
     //Camera 
@@ -72,9 +72,9 @@ public class RobotContainer {
 
      private void configureDefaultCommands() {
         // drivetrain.setDefaultCommand(swerveTeleop);
-        // m_intake.setDefaultCommand(m_intake.set(0));
+        m_intake.setDefaultCommand(m_intake.set(0));
         m_index.setDefaultCommand(m_index.set(0));
-        // m_hopper.setDefaultCommand(m_hopper.set(0));
+        m_hopper.setDefaultCommand(m_hopper.set(0));
         drivetrain.registerTelemetry(logger::telemeterize);
         m_Shooter.setDefaultCommand(m_Shooter.set(0));
         m_hood.setDefaultCommand(m_hood.set(0));
@@ -104,8 +104,8 @@ public class RobotContainer {
         // joystick.rightBumper().whileTrue(rightHubAutoDrive);
 
         //Scoring Bindings
-        // joystick.leftTrigger().whileTrue(m_intake.set(MaxAngularRate));
-        // joystick.rightTrigger().whileTrue(m_hopper.set(0.60));
+        joystick.leftTrigger().whileTrue(m_intake.set(0.80));
+        joystick.rightTrigger().whileTrue(m_hopper.set(0.60));
         joystick.rightTrigger().whileTrue(m_Shooter.setVelocity(RPM.of(3000)));
         joystick.leftTrigger().whileTrue(m_index.set(0.60));
         
